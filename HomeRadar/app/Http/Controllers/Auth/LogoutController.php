@@ -3,23 +3,28 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
+use App\Providers\RouteServiceProvider;
+use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
 class LogoutController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
-    | Logout Controller
+    | Login Controller
     |--------------------------------------------------------------------------
     |
-    | This controller handles logging out users from the application and
-    | redirecting them to the login screen.
+    | This controller handles authenticating users for the application and
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
     |
     */
 
+    use AuthenticatesUsers;
+
     public function logout()
     {
-        Auth::logout();
+        \Auth::logout();
         return redirect('login');
     }
+
 }

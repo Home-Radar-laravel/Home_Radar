@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use Illuminate\View\View;
+
 class LoginController extends Controller
 {
     /*
@@ -32,10 +33,6 @@ class LoginController extends Controller
      *
      * @return void
      */
-    public function showLoginForm(): View
-    {
-        return view('auth.login'); // اسم عرض نموذج تسجيل الدخول، تأكد من أنه يتوافق مع اسم العرض في ملف Blade الخاص بك
-    }
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
