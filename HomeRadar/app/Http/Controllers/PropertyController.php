@@ -58,50 +58,56 @@ class PropertyController extends Controller
     /**
      * Update the specified property in storage.
      */
-    public function update(Request $request, Property $property)
-    {
-        try {
-            $validatedData = $request->validate([
-                'property_name' => 'sometimes|string|max:255',
-                'price' => 'sometimes|numeric|min:0',
-                'property_size' => 'sometimes|numeric|min:0',
-                'garage_size' => 'nullable|numeric|min:0',
-                'rooms' => 'sometimes|integer|min:0',
-                'bathrooms' => 'sometimes|integer|min:0',
-                'availability' => 'sometimes|in:0,1',
-                'description' => 'nullable|string',
-                'location' => 'sometimes|string|max:255',
-                'image1' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'image4' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'image5' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'image6' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            ]);
-    
-            $validatedData['renter_id'] = 1;
-    
-            foreach (['image1', 'image2', 'image3', 'image4', 'image5', 'image6'] as $imageField) {
-                if ($request->hasFile($imageField)) {
-                    if ($property->$imageField) {
-                        Storage::delete($property->$imageField);
-                    }
-    
-                    $validatedData[$imageField] = $request->file($imageField)->store('public/properties');
+    public function update(Request $request, $id)
+{
+    try {
+        // الحصول على العقار حسب المعرف (ID)
+        $property = Property::findOrFail($id);
+
+        // تحقق وتحقق من صحة البيانات
+        $validatedData = $request->validate([
+            'property_name' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric|min:0',
+            'property_size' => 'sometimes|numeric|min:0',
+            'garage_size' => 'nullable|numeric|min:0',
+            'rooms' => 'sometimes|integer|min:0',
+            'bathrooms' => 'sometimes|integer|min:0',
+            'availability' => 'sometimes|in:0,1',
+            'description' => 'nullable|string',
+            'location' => 'sometimes|string|max:255',
+            'image1' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image3' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image4' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image5' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image6' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        // تحديث الصور
+        foreach (['image1', 'image2', 'image3', 'image4', 'image5', 'image6'] as $imageField) {
+            if ($request->hasFile($imageField)) {
+                // حذف الصورة القديمة
+                if ($property->$imageField) {
+                    Storage::delete($property->$imageField);
                 }
+
+                // تخزين الصورة الجديدة
+                $validatedData[$imageField] = $request->file($imageField)->store('public/properties');
             }
-    
-            // استخدام fill و save
-            $property->fill($validatedData);
-            $property->save();
-    
-            return redirect()->route('properties.index')->with('success', 'Property updated successfully!');
-        } catch (ValidationException $e) {
-            return response()->json(['error' => 'Validation Error', 'messages' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update property', 'message' => $e->getMessage()], 500);
         }
+
+        // ملء البيانات وحفظ التحديثات
+        $property->fill($validatedData);
+        $property->save();
+
+        return redirect()->route('properties.index')->with('success', 'Property updated successfully!');
+    } catch (ValidationException $e) {
+        return redirect()->back()->withErrors($e->errors())->withInput();
+    } catch (\Exception $e) {
+        return redirect()->back()->with('error', 'Failed to update property: ' . $e->getMessage())->withInput();
     }
+}
+
     
     
     public function updateAvailability(Request $request, $id)
